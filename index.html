@@ -4,17 +4,14 @@
 <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>CRT Панель — BeautyLab HUD</title>
+    <title>Malygin HUD</title>
 
     <style>
         :root {
             --bg: #0a0c0f;
-            --grid: #0d1117;
             --phosphor: #4aff9c;
             --phosphor-dim: #27e07c;
-            --red: #ff3b3b;
             --text: #d1ffe8;
-            --muted: #7ce4b2;
             --bezel: #12151b;
             --bezel2: #1a1f29;
         }
@@ -23,26 +20,37 @@
             box-sizing: border-box;
         }
 
-        html,
-        body {
-            height: 100%;
-        }
-
         body {
             margin: 0;
-            background: radial-gradient(1200px 800px at 50% 20%, #0b0f13 0%, #050608 60%, #020204 100%);
+            background: radial-gradient(1200px 800px at 50% 20%,
+                    #0b0f13 0%,
+                    #050608 60%,
+                    #020204 100%);
             color: var(--text);
-            font: 15px/1.4 system-ui, -apple-system, Segoe UI, Roboto, "Helvetica Neue",
-                Arial, monospace;
+            font: 15px/1.4 system-ui, monospace;
             display: grid;
             place-items: center;
-            padding: 24px;
+            height: 100vh;
+            animation: flickerBg 4s infinite;
         }
 
-        /* CRT & bezel frame */
+        @keyframes flickerBg {
+            0% {
+                filter: brightness(0.98);
+            }
+
+            50% {
+                filter: brightness(1.02);
+            }
+
+            100% {
+                filter: brightness(0.98);
+            }
+        }
+
         .crt {
             width: min(560px, 100%);
-            filter: contrast(1.05) saturate(1.1);
+            filter: contrast(1.08) saturate(1.2);
             position: relative;
         }
 
@@ -50,14 +58,29 @@
             content: "";
             position: absolute;
             inset: 0;
-            pointer-events: none;
             background: repeating-linear-gradient(to bottom,
-                    rgba(0, 0, 0, 0.15) 0px,
-                    rgba(0, 0, 0, 0.15) 2px,
+                    rgba(0, 0, 0, 0.2) 0px,
+                    rgba(0, 0, 0, 0.2) 2px,
                     rgba(0, 0, 0, 0) 3px,
                     rgba(0, 0, 0, 0) 4px);
             mix-blend-mode: multiply;
             border-radius: 18px;
+            pointer-events: none;
+            animation: flicker 0.12s infinite;
+        }
+
+        @keyframes flicker {
+            0% {
+                opacity: 0.96;
+            }
+
+            50% {
+                opacity: 1;
+            }
+
+            100% {
+                opacity: 0.97;
+            }
         }
 
         .bezel {
@@ -69,18 +92,26 @@
                 inset 0 0 40px rgba(0, 255, 120, 0.05);
         }
 
-        .wrap {
-            text-align: center;
-        }
-
         .logo {
+            text-align: center;
             margin: 0 0 10px;
-            letter-spacing: 6px;
+            letter-spacing: 5px;
             font-weight: 800;
             font-size: 22px;
             color: var(--phosphor);
             text-shadow: 0 0 10px rgba(74, 255, 156, 0.7),
                 0 0 25px rgba(74, 255, 156, 0.35);
+            animation: glow 2s ease-in-out infinite alternate;
+        }
+
+        @keyframes glow {
+            from {
+                text-shadow: 0 0 8px rgba(74, 255, 156, 0.3);
+            }
+
+            to {
+                text-shadow: 0 0 15px rgba(74, 255, 156, 0.8);
+            }
         }
 
         .panel {
@@ -101,14 +132,12 @@
 
         .sub {
             color: #8bdcb9;
-            opacity: 0.9;
             font-size: 12px;
             letter-spacing: 0.8px;
         }
 
         .led {
-            font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas,
-                "Liberation Mono", monospace;
+            font-family: monospace;
             letter-spacing: 1px;
         }
 
@@ -123,6 +152,21 @@
             border-radius: 10px;
             border: 2px solid #163321;
             image-rendering: pixelated;
+            animation: crtPulse 3s infinite;
+        }
+
+        @keyframes crtPulse {
+            0% {
+                filter: brightness(0.98);
+            }
+
+            50% {
+                filter: brightness(1.02);
+            }
+
+            100% {
+                filter: brightness(0.98);
+            }
         }
 
         .controls {
@@ -150,13 +194,12 @@
             filter: brightness(1.15);
         }
 
-        .btn:active {
-            transform: translateY(1px);
-        }
-
         .footer {
             margin: 10px 0 0;
+            text-align: center;
             opacity: 0.6;
+            font-size: 12px;
+            letter-spacing: 1px;
         }
     </style>
 </head>
@@ -164,21 +207,19 @@
 <body>
     <div class="crt">
         <div class="bezel">
-            <div class="wrap">
-                <h1 class="logo">BEAUTYLAB HUD</h1>
-                <div class="panel">
-                    <div id="hud">
-                        <span class="sub">STATUS: <span id="status">OFFLINE</span></span>
-                        <span class="led" id="led">[□□□□□□□]</span>
-                    </div>
-                    <canvas id="canvas"></canvas>
-                    <div class="controls">
-                        <button class="btn" id="startBtn">START</button>
-                        <button class="btn" id="stopBtn">STOP</button>
-                    </div>
+            <h1 class="logo">MALYGIN HUD</h1>
+            <div class="panel">
+                <div id="hud">
+                    <span class="sub">STATUS: <span id="status">OFFLINE</span></span>
+                    <span class="led" id="led">[□□□□□□□]</span>
                 </div>
-                <p class="footer">© 2025 BeautyLab Systems</p>
+                <canvas id="canvas"></canvas>
+                <div class="controls">
+                    <button class="btn" id="startBtn">START</button>
+                    <button class="btn" id="stopBtn">STOP</button>
+                </div>
             </div>
+            <p class="footer">© 2025 Malygin Systems</p>
         </div>
     </div>
 
@@ -190,43 +231,133 @@
         const statusText = document.getElementById('status');
         const led = document.getElementById('led');
 
-        canvas.width = 300;
-        canvas.height = 300;
+        canvas.width = 400;
+        canvas.height = 400;
+        const box = 20;
 
-        let running = false;
-        let angle = 0;
+        let snake, direction, food, score, highScore, running;
+        highScore = localStorage.getItem('malyginHighScore') || 0;
 
-        function draw() {
-            ctx.fillStyle = '#001100';
+        function resetGame() {
+            snake = [{ x: 9 * box, y: 10 * box }];
+            direction = null;
+            food = randomFood();
+            score = 0;
+        }
+
+        function randomFood() {
+            return {
+                x: Math.floor(Math.random() * 19) * box,
+                y: Math.floor(Math.random() * 19) * box
+            };
+        }
+
+        function collision(head, arr) {
+            return arr.some(p => p.x === head.x && p.y === head.y);
+        }
+
+        function drawSnakeGame() {
+            ctx.fillStyle = "#001100";
             ctx.fillRect(0, 0, canvas.width, canvas.height);
 
-            if (running) {
-                ctx.strokeStyle = '#4aff9c';
-                ctx.lineWidth = 3;
-                ctx.beginPath();
-                ctx.arc(150, 150, 100, 0, angle);
-                ctx.stroke();
-                angle += 0.05;
+            ctx.fillStyle = "#4aff9c";
+            ctx.fillRect(food.x, food.y, box, box);
+
+            snake.forEach((s, i) => {
+                ctx.fillStyle = i === 0 ? "#4aff9c" : "#27e07c";
+                ctx.fillRect(s.x, s.y, box - 1, box - 1);
+            });
+
+            let snakeX = snake[0].x;
+            let snakeY = snake[0].y;
+
+            if (direction === "LEFT") snakeX -= box;
+            if (direction === "UP") snakeY -= box;
+            if (direction === "RIGHT") snakeX += box;
+            if (direction === "DOWN") snakeY += box;
+
+            if (snakeX === food.x && snakeY === food.y) {
+                score++;
+                food = randomFood();
+            } else {
+                snake.pop();
             }
 
-            requestAnimationFrame(draw);
+            const newHead = { x: snakeX, y: snakeY };
+
+            if (
+                snakeX < 0 ||
+                snakeY < 0 ||
+                snakeX >= canvas.width ||
+                snakeY >= canvas.height ||
+                collision(newHead, snake)
+            ) {
+                running = false;
+                statusText.textContent = "GAME OVER";
+                statusText.style.color = "#ff3b3b";
+                led.textContent = "[×××××××]";
+                if (score > highScore) {
+                    highScore = score;
+                    localStorage.setItem('malyginHighScore', highScore);
+                }
+                return;
+            }
+
+            snake.unshift(newHead);
+
+            ctx.fillStyle = "#8bdcb9";
+            ctx.font = "15px monospace";
+            ctx.fillText("SCORE: " + score, 10, canvas.height - 25);
+            ctx.fillText("HIGH: " + highScore, 10, canvas.height - 10);
+        }
+
+        document.addEventListener("keydown", (e) => {
+            if (e.key === "ArrowLeft" && direction !== "RIGHT") direction = "LEFT";
+            if (e.key === "ArrowUp" && direction !== "DOWN") direction = "UP";
+            if (e.key === "ArrowRight" && direction !== "LEFT") direction = "RIGHT";
+            if (e.key === "ArrowDown" && direction !== "UP") direction = "DOWN";
+        });
+
+        let gameInterval;
+
+        function gameLoop() {
+            if (running) drawSnakeGame();
+        }
+
+        // --- аудио-эффект включения монитора ---
+        function playStartupSound() {
+            const ctx = new (window.AudioContext || window.webkitAudioContext)();
+            const osc = ctx.createOscillator();
+            const gain = ctx.createGain();
+            osc.connect(gain);
+            gain.connect(ctx.destination);
+            osc.type = "sine";
+            osc.frequency.setValueAtTime(120, ctx.currentTime);
+            osc.frequency.exponentialRampToValueAtTime(30, ctx.currentTime + 0.4);
+            gain.gain.setValueAtTime(0.2, ctx.currentTime);
+            gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + 0.4);
+            osc.start();
+            osc.stop(ctx.currentTime + 0.4);
         }
 
         startBtn.onclick = () => {
+            resetGame();
             running = true;
-            statusText.textContent = 'ACTIVE';
-            statusText.style.color = '#4aff9c';
-            led.textContent = '[■■■■■■■]';
+            statusText.textContent = "ACTIVE";
+            statusText.style.color = "#4aff9c";
+            led.textContent = "[■■■■■■■]";
+            clearInterval(gameInterval);
+            gameInterval = setInterval(gameLoop, 120);
+            playStartupSound(); // звук при запуске
         };
 
         stopBtn.onclick = () => {
             running = false;
-            statusText.textContent = 'OFFLINE';
-            statusText.style.color = '#ff3b3b';
-            led.textContent = '[□□□□□□□]';
+            statusText.textContent = "OFFLINE";
+            statusText.style.color = "#ff3b3b";
+            led.textContent = "[□□□□□□□]";
+            clearInterval(gameInterval);
         };
-
-        draw();
     </script>
 </body>
 
