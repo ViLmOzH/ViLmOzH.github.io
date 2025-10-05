@@ -1,0 +1,233 @@
+<!DOCTYPE html>
+<html lang="ru">
+
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>CRT Панель — BeautyLab HUD</title>
+
+    <style>
+        :root {
+            --bg: #0a0c0f;
+            --grid: #0d1117;
+            --phosphor: #4aff9c;
+            --phosphor-dim: #27e07c;
+            --red: #ff3b3b;
+            --text: #d1ffe8;
+            --muted: #7ce4b2;
+            --bezel: #12151b;
+            --bezel2: #1a1f29;
+        }
+
+        * {
+            box-sizing: border-box;
+        }
+
+        html,
+        body {
+            height: 100%;
+        }
+
+        body {
+            margin: 0;
+            background: radial-gradient(1200px 800px at 50% 20%, #0b0f13 0%, #050608 60%, #020204 100%);
+            color: var(--text);
+            font: 15px/1.4 system-ui, -apple-system, Segoe UI, Roboto, "Helvetica Neue",
+                Arial, monospace;
+            display: grid;
+            place-items: center;
+            padding: 24px;
+        }
+
+        /* CRT & bezel frame */
+        .crt {
+            width: min(560px, 100%);
+            filter: contrast(1.05) saturate(1.1);
+            position: relative;
+        }
+
+        .crt::after {
+            content: "";
+            position: absolute;
+            inset: 0;
+            pointer-events: none;
+            background: repeating-linear-gradient(to bottom,
+                    rgba(0, 0, 0, 0.15) 0px,
+                    rgba(0, 0, 0, 0.15) 2px,
+                    rgba(0, 0, 0, 0) 3px,
+                    rgba(0, 0, 0, 0) 4px);
+            mix-blend-mode: multiply;
+            border-radius: 18px;
+        }
+
+        .bezel {
+            background: linear-gradient(145deg, var(--bezel) 0%, var(--bezel2) 100%);
+            border: 2px solid #0e1219;
+            border-radius: 18px;
+            padding: 18px;
+            box-shadow: 0 15px 40px rgba(0, 0, 0, 0.6),
+                inset 0 0 40px rgba(0, 255, 120, 0.05);
+        }
+
+        .wrap {
+            text-align: center;
+        }
+
+        .logo {
+            margin: 0 0 10px;
+            letter-spacing: 6px;
+            font-weight: 800;
+            font-size: 22px;
+            color: var(--phosphor);
+            text-shadow: 0 0 10px rgba(74, 255, 156, 0.7),
+                0 0 25px rgba(74, 255, 156, 0.35);
+        }
+
+        .panel {
+            background: #000;
+            border: 2px solid #142016;
+            border-radius: 12px;
+            padding: 12px;
+            box-shadow: inset 0 0 35px rgba(74, 255, 156, 0.08);
+        }
+
+        #hud {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 10px;
+            gap: 8px;
+        }
+
+        .sub {
+            color: #8bdcb9;
+            opacity: 0.9;
+            font-size: 12px;
+            letter-spacing: 0.8px;
+        }
+
+        .led {
+            font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas,
+                "Liberation Mono", monospace;
+            letter-spacing: 1px;
+        }
+
+        canvas {
+            width: 100%;
+            height: auto;
+            max-width: 520px;
+            aspect-ratio: 1/1;
+            display: block;
+            margin: 0 auto;
+            background: #001100;
+            border-radius: 10px;
+            border: 2px solid #163321;
+            image-rendering: pixelated;
+        }
+
+        .controls {
+            margin-top: 12px;
+            display: flex;
+            gap: 10px;
+            justify-content: center;
+        }
+
+        .btn {
+            cursor: pointer;
+            border: 2px solid #143b26;
+            background: #0d2418;
+            color: var(--text);
+            padding: 10px 14px;
+            border-radius: 8px;
+            font-weight: 800;
+            letter-spacing: 1px;
+            text-shadow: 0 0 6px rgba(74, 255, 156, 0.5);
+            box-shadow: inset 0 0 10px rgba(74, 255, 156, 0.15),
+                0 6px 18px rgba(0, 0, 0, 0.45);
+        }
+
+        .btn:hover {
+            filter: brightness(1.15);
+        }
+
+        .btn:active {
+            transform: translateY(1px);
+        }
+
+        .footer {
+            margin: 10px 0 0;
+            opacity: 0.6;
+        }
+    </style>
+</head>
+
+<body>
+    <div class="crt">
+        <div class="bezel">
+            <div class="wrap">
+                <h1 class="logo">BEAUTYLAB HUD</h1>
+                <div class="panel">
+                    <div id="hud">
+                        <span class="sub">STATUS: <span id="status">OFFLINE</span></span>
+                        <span class="led" id="led">[□□□□□□□]</span>
+                    </div>
+                    <canvas id="canvas"></canvas>
+                    <div class="controls">
+                        <button class="btn" id="startBtn">START</button>
+                        <button class="btn" id="stopBtn">STOP</button>
+                    </div>
+                </div>
+                <p class="footer">© 2025 BeautyLab Systems</p>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const canvas = document.getElementById('canvas');
+        const ctx = canvas.getContext('2d');
+        const startBtn = document.getElementById('startBtn');
+        const stopBtn = document.getElementById('stopBtn');
+        const statusText = document.getElementById('status');
+        const led = document.getElementById('led');
+
+        canvas.width = 300;
+        canvas.height = 300;
+
+        let running = false;
+        let angle = 0;
+
+        function draw() {
+            ctx.fillStyle = '#001100';
+            ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+            if (running) {
+                ctx.strokeStyle = '#4aff9c';
+                ctx.lineWidth = 3;
+                ctx.beginPath();
+                ctx.arc(150, 150, 100, 0, angle);
+                ctx.stroke();
+                angle += 0.05;
+            }
+
+            requestAnimationFrame(draw);
+        }
+
+        startBtn.onclick = () => {
+            running = true;
+            statusText.textContent = 'ACTIVE';
+            statusText.style.color = '#4aff9c';
+            led.textContent = '[■■■■■■■]';
+        };
+
+        stopBtn.onclick = () => {
+            running = false;
+            statusText.textContent = 'OFFLINE';
+            statusText.style.color = '#ff3b3b';
+            led.textContent = '[□□□□□□□]';
+        };
+
+        draw();
+    </script>
+</body>
+
+</html>
